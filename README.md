@@ -5,7 +5,7 @@
 The Green Spaces project is a tool that can render GeoJSON polygons over aerial imagery and analyse pixels contained within the polygons.
 Its primary use case is to determine the vegetation coverage of residential gardens using aerial imagery stored in OSGB36 format tiles,
 although basic support is also present for Web Mercator.
-The project background and methodology are explained in the Data Science Campus [blog](https://datasciencecampus.ons.gov.uk/projects/green-spaces-in-residential-gardens/).
+The project background and methodology are explained in the Data Science Campus [report](https://datasciencecampus.ons.gov.uk/projects/green-spaces-in-residential-gardens/).
 
 
 # Installation
@@ -50,7 +50,7 @@ Each image loader defines the spectral channels for a given image (for instance 
 
 OSGB36 imagery is assumed to be stored in a hierarchy of folders, of the form `TT/TTxy` which would contain files named `TTxayb.jpg` with metadata in `TTxayb.xml`. For example, the tile `HP4705` is stored in folder `HP\HP40`.
 
-Web mercator imagery is stored in a user-defined hierarchy; the example is in the form `http://your-image-source.com/folderf/folder/{zoom}/{x}/{y}.png`, where the zoom level and x, y coordinates will be replaced at runtime.
+Web mercator imagery is stored in a user-defined hierarchy; the example is in the form `http://your-image-source.com/folderf/folder/{zoom}/{x}/{y}.png`, where the zoom level and x, y coordinates will be replaced at runtime. *Note* that web mercator support is experimental and incomplete.
  
 The data sources are intentionally independent of the vegetation indices. Additionally, the same data reader can be used with different physical datasets. For example, 25 cm OSGB data can be read using the same reader as 12.5 cm OSGB data, with a minor configuration change needed specifying the location of data and number of pixels per image. As the data readers are python classes with the same methods, the code that uses a reader does not need to know if it is consuming OSGB data or Web Mercator, it simply uses the returned results which are in a common form and hence source agnostic.
 
@@ -160,6 +160,8 @@ A folder has been created with the results of the analysis; this is relative to 
   * Detail of the analysis, one row per polygon, recording feature id, polygon centroid in the given reference co-ordinate system, surface area and fraction classified as vegetation
   
 Note that the metrics do not necessarily have to indicate vegetation - it could be (for instance) tarmac you are searching for (although note that the code at present reports "vegetation" which could be replaced with "coverage" or a similar more generic term in future).
+
+Additionally, metrics are correct for OSGB36 tiles (such as surface area), however the results are not supported with web mercator format due to non-linear mapping between pixels and surface area.
 
 ### Optional Arguments
 
