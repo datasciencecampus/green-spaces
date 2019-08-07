@@ -21,8 +21,8 @@ script:
   # to report installed packages
   - pip freeze
   # command to run tests
-#  - python setup.py test
-  - pytest --cov-config .coveragerc --cov=./ tests/
+  - python setup.py test
+#  - pytest --cov-config .coveragerc --cov=./ tests/
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
