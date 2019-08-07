@@ -3,4 +3,4 @@ omit =
   # ignore tests
   tests/*
   # ignore egg contents
-  .egg/*
+  .eggs/*
