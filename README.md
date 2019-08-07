@@ -56,6 +56,9 @@ The vegetation indices are defined in the JSON file to enable the end user to ad
 
 ## Polygon Analysis
 
+The polygon analysis tool is now described in the following sections.
+
+### Initial Help
 A set of polygons supplied in GeoJSON format can be analysed with `green_spaces\analyse_polygons.py`; to reveal the available command line options enter:
 ```bash
 Green_Spaces$ export PYTHONPATH=.
@@ -121,9 +124,65 @@ optional arguments:
 Green_Spaces$ 
 ```
 
-To analyse foliage using NDVI, you can enter:
+### Example Usage
+To analyse foliage using the green leaf index, you can enter:
 
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python green_spaces\analyse_polygons.py -pc 4G -i greenleaf -wl "25cm RGB aerial" data\example_gardens.geojson
+Using TensorFlow backend.
+Sorting features: 100%|#######################################################| 928/928 [00:00<00:00, 1107.38feature/s]
+Analysing features (0 cached, 16 missed; hit rate 0.0%):   2%|3                  | 15/928 [00:09<10:39,  1.43feature/s]
+```
+This requests 4Gb of memory to be allocated for image caching, selects `greenleaf` as the index to process, and `25cm RGB aerial` as the imagery source. The GeoJSON to analyse is located at `data\example_gardens.geojson`. 
 
+The polygons are projected into the selected image dataset (in this case: `25cm RGB aerial`), the polygons are sorted spatially to improve caching, and then the polygons are analysed in turn.
+
+Note that image tiles are slow to load as they are pulled from a potentially slow storage medium , and then are decompressed into memory; hence we cache loaded images to improve throughput. Sorting image in turn improves cache use - for example, 2 polygons per second are processed without image caching, around 15 polygons per second with image caching.
+
+Once the GeoJSON is processed, the output will look like:
+```bash
+Analysing features (992 cached, 6 missed; hit rate 99.4%): 100%|################| 928/928 [01:02<00:00, 14.75feature/s]
+Number of map tile requests: 998
+Number of map tile cache hits vs misses: 992 vs 6
+Green_Spaces$
+```
+
+This reveals how effective the cache was - in this example, 992 polygons generated 998 image tile requests (as some polygons will straddle the boundary between tiles and hence need more than one tile), but of these requests 992 were served from cache with only 6 requests actually pulling data from storage.
+
+A folder has been created with the results of the analysis; this is relative to the current folder and named `output/25cm RGB aerial` (to match the name of the image source used). Three files are output, named after the input GeoJSON file, the image source and index requested:
+* example_gardens-25cm RGB aerial-greenleaf-summary.txt
+  * Provides a summary of the analysis, namely total polygon surface area, total surface area regarded as vegetation by the metric, and the co-ordinate reference system used to record polygon location.
+* example_gardens-25cm RGB aerial-greenleaf-toid2uprn.csv
+  * A two column dataset that maps feature id to feature uprn (as extracted from the GeoJSON)
+* example_gardens-25cm RGB aerial-greenleaf-vegetation.csv
+  * Detail of the analysis, one row per polygon, recording feature id, polygon centroid in the given reference co-ordinate system, surface area and fraction classified as vegetation
+  
+Note that the metrics do not necessarily have to indicate vegetation - it could be (for instance) tarmac you are searching for (although note that the code at present reports "vegetation" which could be replaced with "coverage" or a similar more generic term in future).
+
+### Optional Arguments
+
+Note that multiple indices can be processed at once, to make maximum use of the imagery whilst it is in memory; simply supply a series of index names after the index option, so to process green leaf and visual atmospheric resistence index, enter:
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python green_spaces\analyse_polygons.py -pc 4G -i greenleaf vari -wl "25cm RGB aerial" data\example_gardens.geojson
+Using TensorFlow backend.
+Sorting features: 100%|#######################################################| 928/928 [00:00<00:00, 1339.10feature/s]
+Analysing features (992 cached, 6 missed; hit rate 99.4%): 100%|################| 928/928 [00:51<00:00, 17.94feature/s]
+Number of map tile requests: 998
+Number of map tile cache hits vs misses: 992 vs 6
+```
+
+This outputs files with both indices in the file names, such as `example_gardens-25cm RGB aerial-greenleaf-vari-summary.txt`; the summary will contain extra rows for each additional index requested, and the vegetation file will contain an extra column for each extra index.
+ 
+The output can be directed to a selected folder (default is `output`) with the `-o <folder name>` option.
+
+Debug support is provided where each analysed polygon can be written out as a PNG format bitmap; select `-di 1`. Bitmaps can be output at smaller scales if required, for instance `-di 2` produces 1:2 downsampled images.
+ In addition, the bitmaps can be only overlaid with the calculated vegetation (so revealing which pixels are regarded as vegetation), for this use `-opv`.
+
+If a subset of the images is required, you can select the first N gardens via `-fng <N>` where _N_ is the number of gardens, or a random selection (repeatable for a given file as a seeded psuedo random number is used) with `-rng <N>`.
+
+If the data is downloaded from a slow network, a secondary level cache can be enabled with `-esc` which will tale a copy of downloaded data and store it in the local `cache` folder; this is experimental and only supported at present for WebMercator. Note that there is no upper storage limit for the secondary cache.  
 
 ## Imagery coverage
 
