@@ -1,185 +1,132 @@
-# skeletor
-## A Project Template for Data Science Campus Projects
+# Green Spaces
 
-### 1. Introduction
+The Green Spaces project is a tool that can render GeoJSON polygons over aerial imagery and analyse pixels contained within the polygons.
+Its primary use case is to determine the vegetation coverage of residential gardens using aerial imagery stored in OSGB36 format tiles,
+although basic support is also present for Web Mercator.
+The project background and methodology are explained in the Data Science Campus [blog](https://datasciencecampus.ons.gov.uk/projects/green-spaces-in-residential-gardens/).
 
-This repository is intended to provide you with the documents you need to
-include to get a repository started and give guidance as to what the contents
-should be. The minimum content contained in the README.md for your project
-should be (in the most suitable order for the content):
 
-- description of what the project is
-- instruction on how to install the tool (if applicable)
-- detailed instructions on basic use
-- a demo of the code
+# Installation
 
-With the inclusion of all documents included here, your repository should meet
-all of the recommended [community standards on github.com](https://help.github.com/en/categories/building-a-strong-community).
+The tool has been developed to work on both Windows and MacOS. To install:
 
-Once you have copied this directory you should replace the content of this file
-with the description of your work.
+1. Please make sure Python 3.6 is installed and set at your path.  
+   It can be installed from the [Python release](https://www.python.org/downloads/release/python-360/) pages, selecting the *relevant installer for your opearing system*. When prompted, please check the box to set the paths and environment variables for you and you should be ready to go. Python can also be installed as part of [Anaconda](https://www.anaconda.com/download/).
 
-Whilst no mandatory recommendation is made as to how to
-structure the directories or manage the project itself - as this will vary based
-on the needs and the abilities of those doing the development work - guidelines
-are provided below on how to conduct your project in an Agile manner.
+   To check the Python version default for your system, run the following in command line/terminal:
 
-If your project is complex enough to warrant a documentation website please add
-a branch called `gh_pages` and place your documentation (in html format) there.
-Once you do this your html files will be rendered at
-https://datasciencecampus.github.io/projectName
+   ```
+   python --version
+   ```
+   
+   **_Note_**: If Python 2 is the default Python version, but if you have installed Python 3.6, your path may be setup to use `python3` instead of `python`.
+   
+2. To install the packages and dependencies for the tool, from the root directory (Green_Spaces) run:
+   ``` 
+   pip install -e .
+   ```
+   This will install all the libraries for you.
 
-### 2. Use
+3. To execute the unit tests run:
+   ```
+   python setup.py test
+   ```
+   This will download any required test packages and then run the tests.
 
-There are two ways to use this template:
+# User Instructions
 
-#### 2.1. Using GitHub (simple method)
+The tools available are:
+* Polygon analysis
+* Imagery coverage
+* Simple work distribution
 
-At the top of the main page of this repo is a green [Use this template](https://github.com/datasciencecampus/skeletor/generate) button, which
-will clone this repository into a new repository of your choice. This will also copy over label templates.
+These are now described after the initial dataset configuration, upon which all tools depend to find aerial imagery.
 
-#### 2.2. Using Git
+## Dataset Configuration
 
-Create your new repository with a suitable projectName.
+Your locally available imagery must be configured in a file called `green_spaces/analyse_polygons.json`; a template
+is provided in `green_spaces/analyse_polygons_template.json` which can be copied and updated to match your locally
+available data. The JSON file then defines available image loaders (and hence data sources) and available metrics (various vegetation indices are provided).
 
-Clone this template to the new repository using
+Each image loader defines the spectral channels for a given image (for instance R,G,B or Ir,R,G), the location of the data, the dataset name and the python class responsible for loading the data. This enables new image loaders to be added without changing existing code, with specific image loaders having additional parameters as required. For instance, Ordnance Survey (OS) national grid datasets have a specific number of pixels per 1 kilometre (km) square (determined by image resolution, for example 12.5 centimetre (cm) imagery is 8,000 pixels wide). This enables a resolution independent Ir,R,G,B data reader to be created that internally combines the CIR and RGB datasets to generate the required imagery on demand.
 
-``` sh
-git clone git@github.com:datasciencecampus/skeletor projectName
+The data sources are intentionally independent of the vegetation indices. Additionally, the same data reader can be used with different physical datasets. For example, 25 cm OSGB data can be read using the same reader as 12.5 cm OSGB data, with a minor configuration change needed specifying the location of data and number of pixels per image. As the data readers are python classes with the same methods, the code that uses a reader does not need to know if it is consuming OSGB data or Web Mercator, it simply uses the returned results which are in a common form and hence source agnostic.
+
+The vegetation indices are defined in the JSON file to enable the end user to add new metrics and change their thresholds without altering Python source code. Metrics may be from a different codebase entirely rather than restricted to be part of the project source code. Vegetation indices and image loaders are defined in terms of class name and created using Python’s importlib functionality to create class instances directly from names stored as text strings at run time (note that all indices supplied are defined in `green_spaces\vegetation_analysis.py`).
+
+## Polygon Analysis
+
+A set of polygons supplied in GeoJSON format can be analysed with `green_spaces\analyse_polygons.py`; to reveal the available command line options enter:
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python green_spaces/analyse_polygons.py -h
+usage: analyse_polygons.py [-h] [-o OUTPUT_FOLDER] [-pc PRIMARY_CACHE_SIZE]
+                           [-esc] [-v] [-fng FIRST_N_GARDENS]
+                           [-rng RANDOM_N_GARDENS] [-opv]
+                           [-wl {12.5cm RGB aerial,25cm RGB aerial,50cm CIR aerial,50cm CIR aerial as RGB,12.5cm RGB with 50cm IR aerial,25cm RGB with 50cm IR aerial,Lle2013}]
+                           [-i {naive,greenleaf,hsv,ndvi-cir,ndvi-irgb,vndvi,vari,lab1,lab2,matt,matt2,nn} [{naive,greenleaf,hsv,ndvi-cir,ndvi-irgb,vndvi,vari,lab1,lab2,matt,matt2,nn} ...]]
+                           [-di {0,1,2,4}]
+                           <geojson input file name>
+
+Parse GeoJSON files, download imagery covered by GeoJSON and calculate
+requested image metrics within each GeoJSON polygon
+
+positional arguments:
+  <geojson input file name>
+                        File name of a GeoJSON file to analyse vegetation
+                        coverage
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPUT_FOLDER, --output-folder OUTPUT_FOLDER
+                        Folder name where results of vegetation coverage are
+                        output
+  -pc PRIMARY_CACHE_SIZE, --primary-cache-size PRIMARY_CACHE_SIZE
+                        Memory to allocate for map tiles primary cache (0=no
+                        primary cache); uses human friendly format e.g.
+                        12M=12,000,000
+  -esc, --enable-secondary-cache
+                        Use local storage to hold copies of all downloaded
+                        data and avoid multiple downloads
+  -v, --verbose         Report detailed progress and parameters
+  -fng FIRST_N_GARDENS, --first-n-gardens FIRST_N_GARDENS
+                        Only process first N gardens
+  -rng RANDOM_N_GARDENS, --random-n-gardens RANDOM_N_GARDENS
+                        Process random N gardens
+  -opv, --only-paint-vegetation
+                        Only paint vegetation pixels in output bitmaps
+  -wl {12.5cm RGB aerial,25cm RGB aerial,50cm CIR aerial,50cm CIR aerial as RGB,12.5cm RGB with 50cm IR aerial,25cm RGB with 50cm IR aerial,Lle2013}, --loader {12.5cm RGB aerial,25cm RGB aerial,50cm CIR aerial,50cm CIR aerial as RGB,12.5cm RGB with 50cm IR aerial,25cm RGB with 50cm IR aerial,Lle2013}
+                        What tile loader to use (default: None)
+  -i {naive,greenleaf,hsv,ndvi-cir,ndvi-irgb,vndvi,vari,lab1,lab2,matt,matt2,nn} [{naive,greenleaf,hsv,ndvi-cir,ndvi-irgb,vndvi,vari,lab1,lab2,matt,matt2,nn} ...], --index {naive,greenleaf,hsv,ndvi-cir,ndvi-irgb,vndvi,vari,lab1,lab2,matt,matt2,nn} [{naive,greenleaf,hsv,ndvi-cir,ndvi-irgb,vndvi,vari,lab1,lab2,matt,matt2,nn} ...]
+                        What vegetation index to compute (default: None);
+                        options are: 'naive' (Assumes all pixels within
+                        polygon are green), 'greenleaf' (Green leaf index),
+                        'hsv' (Green from HSV threshold), 'ndvi-cir'
+                        (Normalised difference vegetation index from CIR),
+                        'ndvi-irgb' (Normalised difference vegetation index
+                        from IRGB), 'vndvi' (Visual Normalised difference
+                        vegetation index), 'vari' (Visual atmospheric
+                        resistance index), 'lab1' (Green from L*a*b* colour
+                        space, 'a' threshold only), 'lab2' (Green from L*a*b*
+                        colour space, 'a' and 'b' thresholds), 'matt'
+                        (Interpret Ir, G, B as R, G, B and filter by HSV),
+                        'matt2' (Interpret Ir, G, B as R, G, B and filter by
+                        HSV), 'nn' (Neural network vegetation classifier)
+  -di {0,1,2,4}, --downsampled-images {0,1,2,4}
+                        Dump downsampled images for each garden for
+                        debugging/verification ('0' does not produce images,
+                        '1' produces unscaled images, '2' produces 1:2
+                        downsampled images, '4' produces 1:4 downsampled
+                        images
+Green_Spaces$ 
 ```
 
-which will then create a new directory with your project's name and place all of
-the files into it. However, the remote address will remain as the skeletor repo
-until you do
+To analyse foliage using NDVI, you can enter:
 
-``` sh
-git remote set-url origin git@github.com:datasciencecampus/projectName
-```
 
-### 3. Using GitHub for Project Management
 
-All updates for a project must still be included in the relevant [issue on the main project kanban board](https://github.com/orgs/datasciencecampus/projects/21).
-These guidelines relate to the project repository that you created using the above guidelines.
+## Imagery coverage
 
-#### 3.1. Projects
+## Simple work distribution
 
-This repository shows three projects in the [Project panel](https://github.com/datasciencecampus/skeletor/projects):
-Discovery, Delivery and Dissemination. These projects are setup based on the Campus' project life-cycle and each use a kanban board
-(To do, In Progress, Done). Issues (tasks) should be assigned to the relevant stage of the project life-cycle.
-
-Setup a project board using the 'automated Kanban' template style for each.
-
-#### 3.2. Issues
-
-This GitHub template comes with four [Issue templates](https://github.com/datasciencecampus/skeletor/issues/new/choose):
-Bug report, Feature request, Use query and Task. The first three are normally used when the repository and tool has been made public.
-
-The [Task issue template](https://github.com/datasciencecampus/skeletor/issues/new?assignees=&labels=&template=task.md&title=)
-should be used to create tasks during the project. Issues (tasks) can be created and assigned ad-hoc, or during stand-ups.
-
-#### 3.3. Milestones
-
-[GitHub Milestones](https://github.com/datasciencecampus/skeletor/milestones) can be used to assign tasks to a sprint cycle.
-By assigning a task to a Project and a Milestone, progress on individual sprints as well as stages of the project life-cycle
-can be viewed by the project manager and delivery manager. Milestones should be given due dates, and then all tasks assigned to this
-milestone can be reviewed at the end of the sprint cycle.
-
-#### 3.4. Labels
-
-The [generic GitHub labels are limited in their use](https://medium.com/@dave_lunny/sane-github-labels-c5d2e6004b63),
-this repository has additional [labels](https://github.com/datasciencecampus/skeletor/labels):
-
-- Priority: Low
-- Priority: Medium
-- Priority: High
-- Priority: Critical
-- Project: Background Research
-- Project: Data and Methods
-- Project: Ethical Review
-- Project: Stakeholder Engagement
-- Project: Technical Plan
-- Status: Abandoned
-- Status: Accepted
-- Status: Available
-- Status: Blocked
-- Status: Completed
-- Status: In Progress
-- Status: On Hold
-- Status: Pending
-- Status: Review Needed
-- Status: Revision Needed
-- Type: Bug
-- Type: Maintenance
-- Type: Enhancement
-- Type: Question
-
-To setup these labels do the following:
-
-```
-npm i -g git-labelmaker
-cd projectName
-git-labelmaker
-```
-
-Then go to 'Add labels from package' and then type:
-
-```
-packages/custom-labels.json
-```
-
-The 'Project' labels encompass the majority of Discovery tasks. However, add more labels if you need (either manually or to the JSON file).
-Whereas Issues are small, manageable tasks, Labels are meant to be broad. Using labels shows where the
-majority of the time is being spent on projects by the project manager and delivery manager.
-
-#### 3.5. Example
-
-For a new project, first clone this repository using the steps in section 2. Then setup the three stages
-of the project life cycle as described in section 3.2, and then add the first sprint as a milestone (section 3.3).
-Next, to add the custom labels, follow the steps in section 3.4. Then begin to add tasks.
-
-The first task in the Discovery phase may be to ask within the Campus' whether anyone has done any similar
-or relevant work in the past. Therefore setup an Issue using the [Task template](https://github.com/datasciencecampus/skeletor/issues/new?assignees=&labels=&template=task.md&title=), which may be titled 'Ask within Campus about previous relevant work'.
-Assign this task to the relevant person, add the label of 'Project: Background Research',
-assign to the project 'Discovery' and assign to Sprint 1 in the Milestone section.
-
-Once this task has been completed, close this Issue. The closure of this Issue will then increase
-the progress bar on both the Milestone and Project.
-
-#### 3.6. Benefits
-
-- This will aid delivery and project managers to see the progress of projects in the project life-cycle
-- a comprehensive use of an 'issue' in GitHub will allow delivery and project managers to filter tasks to assign additional resource
-- use of the projects board for each stage of the life-cycle will allow users to quickly see what stage a project is in
-- it facilitates agile working in sprints
-
-### 4. Contents
-
-* **CODE_OF_CONDUCT.md**: a statement from the [Contributor
-  Covenant](https://contributor-covenant.org) regarding what is and isn't
-  acceptable behaviour for contributors
-* **CONTRIBUTING**: guidelines for how contributions should be made to the work,
-  this is currently empty but should contain information such as code
-  formatting, how to add test fixes and how to submit patches. There is a very
-  good
-  [example](https://github.com/puppetlabs/puppet/blob/master/CONTRIBUTING.md)
-  from the puppet repo by puppetlabs. Because all of our teams will be varied in
-  terms of size, skills and project aims it is left to each project to define
-  this.
-* **README.md**: this document, every repository should have one and it acts as
-  the main landing page for your repository
-* **LICENSE**: the UK public sector usually operate under two different
-  licensing schemes. The most common for code is the MIT license which is
-  included in this repo. Alternatively there is an Open Government license and
-  a description of what OpenGov enforces can be found
-  [here](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
-* **.github**: this directory allows the user to specify templates for
-  contribution types, included in this repository are a bug fix submission
-  template, a feature request template and a pull request template. Each of them
-  includes a series of tickboxes which you can use to help you decide whether or
-  not the submission is suitable.
-* **.gitignore**: this file allows you to specify which directories, files and
-  globbed file types are to be ignored as part of the diffs being managed by
-  git. This allows you to have your data in the same directory structure as your
-  code without it needing to be pushed and pulled along with it. If you have
-  data which you do need to manage I would highly advise the use of `git-annex`
-  ahead of including data files in your repository (unless they are small).
+# Demo
