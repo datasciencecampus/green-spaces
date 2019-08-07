@@ -247,7 +247,7 @@ Three formats are supported:
   * The metadata for each image is processed, created a coloured tile for each image where the colour represents the image capture date. The tiles are stitched together to form an overview map, complete with colour key. One image is generated for time of year (to enable seasonality analysis), and another image is generated for the complete date (enabling age of imagery analysis)
 
 ## Simple Work Distribution
-Given that a large number of polygons may need to be processed, we provide tools to split a large GeoJSON file into many smaller files, and then to distribute the work across a cluster of machines.
+Given that a large number of polygons may need to be processed, we provide tools to split a large GeoJSON file into many smaller files, and then to distribute the work across a cluster of machines. All utilities support the `-h` command line option for help with command line arguments.
 
 ### Split Large GeoJSON
 If a GeoJSON is large (e.g. more than 100,000 polygons) it may be beneficial to split the file to enable distributed analysis. To split such a file, enter:
@@ -286,6 +286,21 @@ This will look in the specified inpile folder (`inpile_folder` in example) for a
 
 ### Recombining Results
 
-Once all GeoJSON are processed, the results need to be recombined so the end user can continue as if a single GeoJSON was processed (rather than being concerned with potentially 100's of partial files).
+Once all GeoJSON are processed, the results need to be recombined so the end user can continue as if a single GeoJSON was processed (rather than being concerned with potentially 100's of partial files). To recombine the outputs from the bulk analysis, enter:
 
-# Demo
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python scripts/bulk_recombine.py -rf results_folder -of combined_results_folder -i greenleaf -wl "25cm RGB aerial" 
+```
+
+This searches for results in the `results_folder`, which are from the specified index and data source. The combined results are written to the output folder (specified as `combined_results_folder` in the example).
+
+The end results will be the same three files as if the original GeoJSON was analysed directly as a single file.
+
+### Sift Incomplete Results
+One problem of naively distributing the analyses amongst independent machinesm, is the potential for machines to fail. In which case, GeoJSON files may be moved to the output folder without producing corresponding results files. This utility detects such GeoJSON files, indicating they haven't been processed, and moves the files back to the inpile folder. To run the utility, enter:
+
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python scripts/bulk_sift_incomplete.py -if inpile_folder -of outpile_folder -rf results_folder
+```
