@@ -6,7 +6,7 @@ import sys
 
 
 def get_args(command_line_arguments=sys.argv[1:]):
-    parser = argparse.ArgumentParser(description="Split GeoJSON files into N features per file (ready for distribution)")
+    parser = argparse.ArgumentParser(description="Recombine multiple results from a set of GeoJSON files into a single output (as if a single GeoJSON has been analysed)")
 
     parser.add_argument('-of', '--output-folder', default='Z:\\outpile',
                         help="Folder where results are to be written")

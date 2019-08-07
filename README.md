@@ -128,7 +128,7 @@ To analyse foliage using the green leaf index, you can enter:
 
 ```bash
 Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces\analyse_polygons.py -pc 4G -i greenleaf -wl "25cm RGB aerial" data\example_gardens.geojson
+Green_Spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf -wl "25cm RGB aerial" data\example_gardens.geojson
 Using TensorFlow backend.
 Sorting features: 100%|#######################################################| 928/928 [00:00<00:00, 1107.38feature/s]
 Analysing features (0 cached, 16 missed; hit rate 0.0%):   2%|3                  | 15/928 [00:09<10:39,  1.43feature/s]
@@ -164,7 +164,7 @@ Note that the metrics do not necessarily have to indicate vegetation - it could 
 Note that multiple indices can be processed at once, to make maximum use of the imagery whilst it is in memory; simply supply a series of index names after the index option, so to process green leaf and visual atmospheric resistence index, enter:
 ```bash
 Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces\analyse_polygons.py -pc 4G -i greenleaf vari -wl "25cm RGB aerial" data\example_gardens.geojson
+Green_Spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf vari -wl "25cm RGB aerial" data\example_gardens.geojson
 Using TensorFlow backend.
 Sorting features: 100%|#######################################################| 928/928 [00:00<00:00, 1339.10feature/s]
 Analysing features (992 cached, 6 missed; hit rate 99.4%): 100%|################| 928/928 [00:51<00:00, 17.94feature/s]
@@ -192,7 +192,7 @@ Tools for generating summary images from OSGB36 tiled imagery are now presented.
 Given that you have created an `analyse_polygons.json` configuration file, you can now launch the coverage tool:
 ```bash
 Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces\generate_coverage.py -h
+Green_Spaces$ python green_spaces/generate_coverage.py -h
 usage: generate_coverage.py [-h] [-ts TILE_SIZE] [-tqdm USE_TQDM]
                             [-ca {thumbnail,coverage,flights}]
                             [-rf ROOT_FOLDER]
@@ -224,7 +224,7 @@ Green_Spaces$
 To generate a single image from all imagery present in a dataset, use:
 ```bash
 Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces\generate_coverage.py -ts 8 -tqdm true -ca thumbnail -rf thumbnails "50cm CIR aerial"
+Green_Spaces$ python green_spaces/generate_coverage.py -ts 8 -tqdm true -ca thumbnail -rf thumbnails "50cm CIR aerial"
 Summary data shape: 10,400 x 5,600 pixels
 
 100km tiles:   0%|                                                                              | 0/55 [00:00<?, ?it/s]
@@ -234,7 +234,7 @@ Summary data shape: 10,400 x 5,600 pixels
 
 This has requested tiles of 8 pixels by 8 pixels to represent the source image tiles, where image tiles are read from the `50cm CIR aerial` dataset. A progress bar has been requested (we use the TQDM library), and the output is to be stored in the `thumbnails` folder. This will generate a single bitmap, in this case of size 10,400 by 5,600 pixels, along with a report of any issues when reading images.
 
-Note that this will probably take a long time - considering 10's of Gb of data may be processed.
+Note that this will probably take a long time - considering 100's of Gb of data may be processed.
 
 ### Supported Options
 
@@ -245,6 +245,47 @@ Three formats are supported:
   * Each image is represnted by a white tile if present, black otherwise; this enables a rapid determination if any files are missing
 * `flights`
   * The metadata for each image is processed, created a coloured tile for each image where the colour represents the image capture date. The tiles are stitched together to form an overview map, complete with colour key. One image is generated for time of year (to enable seasonality analysis), and another image is generated for the complete date (enabling age of imagery analysis)
+
 ## Simple Work Distribution
+Given that a large number of polygons may need to be processed, we provide tools to split a large GeoJSON file into many smaller files, and then to distribute the work across a cluster of machines.
+
+### Split Large GeoJSON
+If a GeoJSON is large (e.g. more than 100,000 polygons) it may be beneficial to split the file to enable distributed analysis. To split such a file, enter:
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python scripts/split_geojson.py -fpf 10000 your_polygons.geojson
+Extracting features into sets of 1000: 100%|██████████████████████████████| 10000/10000 [00:04<00:00, 2430.21feature/s]
+
+Green_Spaces$
+```
+
+This will generate _N_ files (depending on how many sets of 1,000 polygons are required to store your original dataset). The new files will be created in the same folder as the source file, with the suffix `XofY`, so if 12 files were needed with the above example, the new files will be named `your_polygons_1of12.geojson`, `your_polygons_2of12.geojson`, etc.
+
+The number of polygons per file is specified with the `-fpf` parameter.
+
+### Bulk Analysis of GeoJSON
+
+To perform bulk analysis, the following folders are required:
+* Processing
+  * GeoJSON files that are currently being processed
+* Inpile
+  * GeoJSON files that are yet to be processed
+* Outpile
+  * GeoJSON files that have been processed
+* Results
+  * Output from `analyse_polygons` produced for each GeoJSON in the outpile folder
+  
+To run a bulk analysis using the `analyse_polgons.py` utility, instead use:
+
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python scripts/bulk_analyse.py -if inpile_folder -of outpile_folder -rf results_folder -pf processing_folder -pcs 4G -i greenleaf -wl "25cm RGB aerial" 
+```
+
+This will look in the specified inpile folder (`inpile_folder` in example) for any unprocessed GeoJSON. If none are present, it will terminate as all work is complete. Otherwise, it will attempt to move a GeoJSON into the processing folder (named `processing_folder` in the example), into a folder named after the current machine and its process ID. As part of the POSIX standard, such an operation is atomic and hence only one machine can succeed (if two machines attempt to move the same file, one will fail and retry a different GeoJSON). The dataset and cache parameters are given to `analyse_polygons.py` along with the GeoJSON filename, with output directed to the results folder.
+
+### Recombining Results
+
+Once all GeoJSON are processed, the results need to be recombined so the end user can continue as if a single GeoJSON was processed (rather than being concerned with potentially 100's of partial files).
 
 # Demo
