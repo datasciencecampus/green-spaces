@@ -7,11 +7,9 @@ The project background and methodology are explained in the Data Science Campus 
 
 
 # Installation
-
 The tool has been developed to work on both Windows and MacOS. To install:
 
-1. Please make sure Python 3.6 is installed and set at your path.  
-   It can be installed from the [Python release](https://www.python.org/downloads/release/python-360/) pages, selecting the *relevant installer for your opearing system*. When prompted, please check the box to set the paths and environment variables for you and you should be ready to go. Python can also be installed as part of [Anaconda](https://www.anaconda.com/download/).
+1. Please make sure Python 3.6 is installed and set at your path; it can be installed from the [Python release](https://www.python.org/downloads/release/python-360/) pages, selecting the *relevant installer for your operating system*. When prompted, please check the box to set the paths and environment variables for you and you should be ready to go. Python can also be installed as part of [Anaconda](https://www.anaconda.com/download/).
 
    To check the Python version default for your system, run the following in command line/terminal:
 
@@ -34,7 +32,6 @@ The tool has been developed to work on both Windows and MacOS. To install:
    This will download any required test packages and then run the tests.
 
 # User Instructions
-
 The tools available are:
 * Polygon analysis
 * Imagery coverage
@@ -43,19 +40,21 @@ The tools available are:
 These are now described after the initial dataset configuration, upon which all tools depend to find aerial imagery.
 
 ## Dataset Configuration
-
 Your locally available imagery must be configured in a file called `green_spaces/analyse_polygons.json`; a template
 is provided in `green_spaces/analyse_polygons_template.json` which can be copied and updated to match your locally
 available data. The JSON file then defines available image loaders (and hence data sources) and available metrics (various vegetation indices are provided).
 
 Each image loader defines the spectral channels for a given image (for instance R,G,B or Ir,R,G), the location of the data, the dataset name and the python class responsible for loading the data. This enables new image loaders to be added without changing existing code, with specific image loaders having additional parameters as required. For instance, Ordnance Survey (OS) national grid datasets have a specific number of pixels per 1 kilometre (km) square (determined by image resolution, for example 12.5 centimetre (cm) imagery is 8,000 pixels wide). This enables a resolution independent Ir,R,G,B data reader to be created that internally combines the CIR and RGB datasets to generate the required imagery on demand.
 
+OSGB36 imagery is assumed to be stored in a hierarchy of folders, of the form `TT/TTxy` which would contain files named `TTxayb.jpg` with metadata in `TTxayb.xml`. For example, the tile `HP4705` is stored in folder `HP\HP40`.
+
+Web mercator imagery is stored in a user-defined hierarchy; the example is in the form `http://your-image-source.com/folderf/folder/{zoom}/{x}/{y}.png`, where the zoom level and x, y coordinates will be replaced at runtime.
+ 
 The data sources are intentionally independent of the vegetation indices. Additionally, the same data reader can be used with different physical datasets. For example, 25 cm OSGB data can be read using the same reader as 12.5 cm OSGB data, with a minor configuration change needed specifying the location of data and number of pixels per image. As the data readers are python classes with the same methods, the code that uses a reader does not need to know if it is consuming OSGB data or Web Mercator, it simply uses the returned results which are in a common form and hence source agnostic.
 
 The vegetation indices are defined in the JSON file to enable the end user to add new metrics and change their thresholds without altering Python source code. Metrics may be from a different codebase entirely rather than restricted to be part of the project source code. Vegetation indices and image loaders are defined in terms of class name and created using Python’s importlib functionality to create class instances directly from names stored as text strings at run time (note that all indices supplied are defined in `green_spaces\vegetation_analysis.py`).
 
 ## Polygon Analysis
-
 The polygon analysis tool is now described in the following sections.
 
 ### Initial Help
@@ -184,8 +183,68 @@ If a subset of the images is required, you can select the first N gardens via `-
 
 If the data is downloaded from a slow network, a secondary level cache can be enabled with `-esc` which will tale a copy of downloaded data and store it in the local `cache` folder; this is experimental and only supported at present for WebMercator. Note that there is no upper storage limit for the secondary cache.  
 
-## Imagery coverage
+## OSGB36 Summary Images
 
-## Simple work distribution
+Tools for generating summary images from OSGB36 tiled imagery are now presented.
+
+### Initial Help
+
+Given that you have created an `analyse_polygons.json` configuration file, you can now launch the coverage tool:
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python green_spaces\generate_coverage.py -h
+usage: generate_coverage.py [-h] [-ts TILE_SIZE] [-tqdm USE_TQDM]
+                            [-ca {thumbnail,coverage,flights}]
+                            [-rf ROOT_FOLDER]
+                            {12.5cm RGB aerial,25cm RGB aerial,50cm CIR
+                            aerial,50cm CIR aerial as RGB}
+
+Generate overall map from OSGB folder hierarchy
+
+positional arguments:
+  {12.5cm RGB aerial,25cm RGB aerial,50cm CIR aerial,50cm CIR aerial as RGB}
+                        Which dataset to analyse
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -ts TILE_SIZE, --tile-size TILE_SIZE
+                        Tile size each image is mapped to
+  -tqdm USE_TQDM, --use-tqdm USE_TQDM
+                        Use TQDM to display completion graphs
+  -ca {thumbnail,coverage,flights}, --coverage-analysis {thumbnail,coverage,flights}
+                        Data represented in summary image
+  -rf ROOT_FOLDER, --root-folder ROOT_FOLDER
+                        Root folder where aerial photography is stored
+                        
+Green_Spaces$
+```
+
+### Example Usage
+
+To generate a single image from all imagery present in a dataset, use:
+```bash
+Green_Spaces$ export PYTHONPATH=.
+Green_Spaces$ python green_spaces\generate_coverage.py -ts 8 -tqdm true -ca thumbnail -rf thumbnails "50cm CIR aerial"
+Summary data shape: 10,400 x 5,600 pixels
+
+100km tiles:   0%|                                                                              | 0/55 [00:00<?, ?it/s]
+10km tiles in HP:  50%|#################################                                 | 3/6 [00:17<00:13,  4.66s/it]
+1km tiles in HP60:  70%|###########################################9                   | 37/53 [00:05<00:02,  7.42it/s]
+```
+
+This has requested tiles of 8 pixels by 8 pixels to represent the source image tiles, where image tiles are read from the `50cm CIR aerial` dataset. A progress bar has been requested (we use the TQDM library), and the output is to be stored in the `thumbnails` folder. This will generate a single bitmap, in this case of size 10,400 by 5,600 pixels, along with a report of any issues when reading images.
+
+Note that this will probably take a long time - considering 10's of Gb of data may be processed.
+
+### Supported Options
+
+Three formats are supported:
+* `thumbnail`
+  * Each image bitmap is downsampled and stiched together for an overview map
+* `coverage`
+  * Each image is represnted by a white tile if present, black otherwise; this enables a rapid determination if any files are missing
+* `flights`
+  * The metadata for each image is processed, created a coloured tile for each image where the colour represents the image capture date. The tiles are stitched together to form an overview map, complete with colour key. One image is generated for time of year (to enable seasonality analysis), and another image is generated for the complete date (enabling age of imagery analysis)
+## Simple Work Distribution
 
 # Demo
