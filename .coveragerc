@@ -1,2 +1,6 @@
 [run]
-omit = tests/*
+omit =
+  # ignore tests
+  tests/*
+  # ignore egg contents
+  .eggs/*
