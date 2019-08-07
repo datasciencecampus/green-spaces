@@ -7,11 +7,11 @@ import subprocess
 import sys
 
 
-from emeraldenv import analyse_polygons
+from green_spaces import analyse_polygons
 
 
 def get_args(command_line_arguments=sys.argv[1:]):
-    parser = argparse.ArgumentParser(description="Detect geojson in outpile without matching results file and move back to inpile for reprocessing")
+    parser = argparse.ArgumentParser(description="Detect GeoJSON in outpile without matching results file and move back to inpile for reprocessing")
 
     parser.add_argument('-if', '--inpile-folder', required=True,
                         help="Folder where files to process are stored")

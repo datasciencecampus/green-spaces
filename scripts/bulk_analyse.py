@@ -8,7 +8,7 @@ import sys
 
 def get_args(command_line_arguments=sys.argv[1:]):
     parser = argparse.ArgumentParser(
-        description="Split GeoJSON files into N features per file (ready for distribution)")
+        description="Process a folder full of GeoJSON files")
 
     parser.add_argument('-if', '--inpile-folder', default='Z:\\inpile',
                         help="Folder containing geojson files to be processed")
