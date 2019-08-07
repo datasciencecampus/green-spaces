@@ -27,4 +27,3 @@ comment:
 
 ignore:
   - "tests"  # ignore folders and all its contents
-  - ".eggs"  # ignore 3rd party source code

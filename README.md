@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/datasciencecampus/Green_Spaces.svg?branch=develop)](https://travis-ci.com/datasciencecampus/Green_Spaces)
-"[![codecov](https://codecov.io/gh/datasciencecampus/Green_Spaces/branch/develop/graph/badge.svg)](https://codecov.io/gh/datasciencecampus/Green_Spaces)
+[![codecov](https://codecov.io/gh/datasciencecampus/Green_Spaces/branch/develop/graph/badge.svg)](https://codecov.io/gh/datasciencecampus/Green_Spaces)
 # Green Spaces
 
 The Green Spaces project is a tool that can render GeoJSON polygons over aerial imagery and analyse pixels contained within the polygons.
