@@ -6,13 +6,14 @@
 # Green Spaces
 
 The Green Spaces project is a tool that can render GeoJSON polygons over aerial imagery and analyse pixels contained within the polygons.
-Its primary use case is to determine the vegetation coverage of residential gardens using aerial imagery stored in OSGB36 format tiles,
+Its primary use case is to determine the vegetation coverage of residential gardens (defined as polygons in GeoJSON) using aerial imagery stored in OSGB36 format tiles,
 although basic support is also present for Web Mercator.
 The project background and methodology are explained in the Data Science Campus [report](https://datasciencecampus.ons.gov.uk/projects/green-spaces-in-residential-gardens/).
 
+Given its primary use case, the indices calculated are referred to as vegetation indices, but please note the indices are simply functions that accept an image (stored as colour tuple per pixel, forming a 3D numpy array) and return a 2D boolean array indicating a pixel's label. The analysis code then accumulates the percentage of `true` and `false` results per polygon to produce a percentage coverage per polygon. The indices are hence free to represent anything - if polygons represent buildings, an index could mark if pixels are roof tiles; if polygons are fields, an index could mark if pixels are bare earth; the only constraints are what can be detected at the pixel level given your available imagery.
 
 # Installation
-The tool has been developed to work on both Windows and MacOS. To install:
+The tool has been developed to work on Windows, Linux and MacOS. To install:
 
 1. Please make sure Python 3.6 is installed and set at your path; it can be installed from the [Python release](https://www.python.org/downloads/release/python-360/) pages, selecting the *relevant installer for your operating system*. When prompted, please check the box to set the paths and environment variables for you and you should be ready to go. Python can also be installed as part of [Anaconda](https://www.anaconda.com/download/).
 
@@ -60,7 +61,11 @@ The data sources are intentionally independent of the vegetation indices. Additi
 The vegetation indices are defined in the JSON file to enable the end user to add new metrics and change their thresholds without altering Python source code. Metrics may be from a different codebase entirely rather than restricted to be part of the project source code. Vegetation indices and image loaders are defined in terms of class name and created using Python’s importlib functionality to create class instances directly from names stored as text strings at run time (note that all indices supplied are defined in `green_spaces\vegetation_analysis.py`).
 
 ## Polygon Analysis
-The polygon analysis tool is now described in the following sections.
+The polygon analysis tool takes a GeoJSON file defining polygons as input, projects these polygons onto the selected image source and applies the requested vegetation index to the pixels within the polygon, as per the following process flow:
+
+<p align="center"><img align="center" src="https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2019/07/Figure_27-2.png" width="400px"></p>
+
+The polygon analysis tool is now described in the following sections, starting with the available online help, followed by an example use case, explanation of remaining command line parameters and finally a list of available vegetation indices.
 
 ### Initial Help
 A set of polygons supplied in GeoJSON format can be analysed with `green_spaces\analyse_polygons.py`; to reveal the available command line options enter:
@@ -190,6 +195,39 @@ If a subset of the images is required, you can select the first N gardens via `-
 
 If the data is downloaded from a slow network, a secondary level cache can be enabled with `-esc` which will tale a copy of downloaded data and store it in the local `cache` folder; this is experimental and only supported at present for WebMercator. Note that there is no upper storage limit for the secondary cache.  
 
+### Vegetation Indices
+Each vegetation index is now described along with its configuration. Note that all indices have configuration stored in `analyse_polygons.json` as part of each indices' definition. The configuration is index dependent (the JSON data is passed directly to the index implementation for it to determine its configuration). Further information may be found in the "[Vegetation detection](https://datasciencecampus.ons.gov.uk/projects/green-spaces-in-residential-gardens/#section-3)" section of the project report.
+
+#### naive
+No configuration, simply returns "true" for all pixels - in effect assumes all pixels within a polygon represent vegetation.
+
+#### greenleaf
+Implements the [Green Leaf Index](https://www.harrisgeospatial.com/docs/BroadbandGreenness.html#Green6), where low and high thresholds define what is flagged as "vegetation".
+
+#### hsv
+Maps pixel colour into HSV colour space and flags vegetation if the hue is within a specified threshold range.
+
+#### ndvi-cir
+[Normalised Difference Vegetation Index](https://www.harrisgeospatial.com/docs/BroadbandGreenness.html#NDVI), adapted to use the Colour Infra Red image format (stored is Ir,R,G in the R,G,B channels). Returns true if ndvi falls within a threshold range.
+
+#### ndvi-irgb
+[Normalised Difference Vegetation Index](https://www.harrisgeospatial.com/docs/BroadbandGreenness.html#NDVI), adapted to use the 32bit imagery (R,G,B,Ir stored in the R,G,B,A fields). Returns true if ndvi falls within a threshold range.
+
+#### vndvi
+[Visual Normalised Difference Vegetation Index](https://support.precisionmapper.com/support/solutions/articles/6000214541-visual-ndvi), returns true if vndvi falls within the threshold range.
+
+#### vari
+[Visual Atmospheric Resistance Index](https://support.precisionmapper.com/support/solutions/articles/6000214543-vari), returns true if vndvi falls within the threshold range.
+
+#### lab1
+Green from [L*a*b colour space](https://en.wikipedia.org/wiki/CIELAB_color_space), returns true if the `a` component of a pixel falls within a threshold range.
+
+#### lab2
+Green from [L*a*b colour space](https://en.wikipedia.org/wiki/CIELAB_color_space), returns true if both the `a` and `b` components of a pixel falls within threshold ranges (different thresholds for `a` and `b`).
+
+#### nn
+Artificial neural network trained on gardens in Bristol and Cardiff, returns `true` if a pixel is deemed vegetation. Configuration stores PCA mapping for the three PCA variants (monochrome, brightness and colour), and also the weights and architecture of the neural network (stored using [Keras](https://keras.io/) in an HDF5 file). Further information is presented in the "[Vegetation detection using supervised machine learning](https://datasciencecampus.ons.gov.uk/projects/green-spaces-in-residential-gardens/#section-8)" section of the project report.    
+
 ## OSGB36 Summary Images
 
 Tools for generating summary images from OSGB36 tiled imagery are now presented.
@@ -282,7 +320,7 @@ To perform bulk analysis, the following folders are required:
 * Results
   * Output from `analyse_polygons` produced for each GeoJSON in the outpile folder
   
-To run a bulk analysis using the `analyse_polgons.py` utility, instead use:
+To run a bulk analysis using the `analyse_polygons.py` utility, instead use:
 
 ```bash
 Green_Spaces$ export PYTHONPATH=.
@@ -305,7 +343,7 @@ This searches for results in the `results_folder`, which are from the specified 
 The end results will be the same three files as if the original GeoJSON was analysed directly as a single file.
 
 ### Sift Incomplete Results
-One problem of naively distributing the analyses amongst independent machinesm, is the potential for machines to fail. In which case, GeoJSON files may be moved to the output folder without producing corresponding results files. This utility detects such GeoJSON files, indicating they haven't been processed, and moves the files back to the inpile folder. To run the utility, enter:
+One problem of naively distributing the analyses amongst independent machines, is the potential for machines to fail. In which case, GeoJSON files may be moved to the output folder without producing corresponding results files. This utility detects such GeoJSON files, indicating they haven't been processed, and moves the files back to the inpile folder. To run the utility, enter:
 
 ```bash
 Green_Spaces$ export PYTHONPATH=.
