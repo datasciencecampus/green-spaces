@@ -61,7 +61,7 @@ The data sources are intentionally independent of the vegetation indices. Additi
 The vegetation indices are defined in the JSON file to enable the end user to add new metrics and change their thresholds without altering Python source code. Metrics may be from a different codebase entirely rather than restricted to be part of the project source code. Vegetation indices and image loaders are defined in terms of class name and created using Python’s importlib functionality to create class instances directly from names stored as text strings at run time (note that all indices supplied are defined in `green_spaces\vegetation_analysis.py`).
 
 ## Polygon Analysis
-The polygon analysis tool takes a GeoJSON file defining polygons as input, projects these polygons onto the selected image source and applys the requested vegetation index to the pixels within the polygon, as per the following process flow:
+The polygon analysis tool takes a GeoJSON file defining polygons as input, projects these polygons onto the selected image source and applies the requested vegetation index to the pixels within the polygon, as per the following process flow:
 
 <p align="center"><img align="center" src="https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2019/07/Figure_27-2.png" width="400px"></p>
 
