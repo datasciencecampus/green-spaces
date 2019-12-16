@@ -55,7 +55,7 @@ def setup_package():
             'Topic :: Scientific/Engineering :: Information Analysis',
         ],
         install_requires=['opencv-python', 'numpy', 'rasterio', 'scipy', 'shapely', 'tqdm', 'humanfriendly',
-                          'cachetools', 'pyproj', 'keras==2.2.4', 'tensorflow==1.13.1'],
+                          'cachetools', 'pyproj', 'keras==2.2.4', 'tensorflow==1.15.0'],
         tests_require=['pytest', 'pytest-cov', 'pandas', 'pyfakefs'],
         setup_requires=['pytest-runner'],
         python_requires='>=3.6',
