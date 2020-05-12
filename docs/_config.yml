@@ -11,7 +11,7 @@ logo: /static/logo.svg
 # as "/reponame" but either set to "" or remove it all together if you have
 # a top-level domain URL as it is now set to "" by default as discussed in:
 # http://jekyllrb.com/news/2016/10/06/jekyll-3-3-is-here/
-baseurl: "/skeletor-docs"
+baseurl: "/green-spaces"
 
 # the base hostname & protocol for your site
 # If baseurl is set, then the absolute url for your site would be url/baseurl
@@ -29,7 +29,7 @@ url: "http://datasciencecampus.github.io"
 # https://github.com/blog/2277-what-s-new-in-github-pages-with-jekyll-3-3
 
 # The GitHub repo for your project
-ghrepo: "datasciencecampus/skeletor-docs"
+ghrepo: "datasciencecampus/green-spaces"
 
 # Use these color settings to determine your colour scheme for the site.
 color:

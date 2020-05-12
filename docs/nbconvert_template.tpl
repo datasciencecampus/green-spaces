@@ -49,7 +49,7 @@ subsections:
 {%- endblock input_group -%}
 
 {% block data_png %}
-![png](/skeletor-docs/static/{{ output.metadata.filenames['image/png'] }})
+![png](/green-spaces/static/{{ output.metadata.filenames['image/png'] }})
 {% endblock data_png %}
 
 {% block markdowncell %}

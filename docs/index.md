@@ -1,6 +1,6 @@
 ---
 layout: home
-title: skeletor-docs
+title: green-spaces
 id: home
 ---
 
