@@ -2,7 +2,7 @@
   "name": "green_spaces",
   "license": "MIT",
   "author": "Data Science Campus",
-  "url": "https://github.com/datasciencecampus/Green_Spaces",
+  "url": "https://github.com/datasciencecampus/green-spaces",
   "version": "1.0.0",
   "email": "datasciencecampus@ons.gov.uk",
   "description": "Render GeoJSON polygons over aerial imagery and analyse pixels covered by vegetation; used to calculate green spaces in residential gardens",

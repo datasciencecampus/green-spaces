@@ -1,16 +1,12 @@
-- title: Blurb 1 Header.
+- title: Determine the vegetation coverage.
   text: |
-        This text explains the blurb header.
+        green-spaces can be used to determine the vegetation coverage of areas using aerial imagery.
   align: left
 
-- title: Blurb 2 Header.
+- title: Select your own vegetation indice.
   text: |
-        This text explains the blurb header.
+        Select from naive, greenleaf, hsv, ndvi, vndvi, vari, lab or a neural network.
 
-- title: Blurb 3 Header.
+- title: Subset your images using polygons.
   text: |
-        This text explains the blurb header.
-
-- title: Blurb 4 Header.
-  text: |
-        This text explains the blurb header.
+        This allows the user to focus on certain parts of the aerial imagery, such as gardens.

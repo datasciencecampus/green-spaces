@@ -5,10 +5,10 @@
   children:
   - type: button
     href: docs/installation.html
-    text: Install <tool name here>
+    text: Install green-spaces
   - type: button
     href: docs/quick_start.html
-    text: Get started
+    text: Getting started
   - type: button
-    href: https://datasciencecampus.ons.gov.uk/
-    text: Read the report
+    href: https://datasciencecampus.ons.gov.uk/projects/green-spaces-in-residential-gardens/
+    text: Read the technical report

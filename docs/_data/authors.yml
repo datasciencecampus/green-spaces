@@ -1,8 +1,11 @@
-
-name1:
-  full_name: First Last
+iangrimstead:
+  full_name: Ian Grimstead
   fbid: 605889
 
-name2:
-  full_name: First Last
+chrisbonham:
+  full_name: Chris Bonham
+  fbid: 605889
+
+soniawilliams:
+  full_name: Sonia Williams
   fbid: 605889

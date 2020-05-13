@@ -26,9 +26,11 @@ Tools for generating summary images from OSGB36 tiled imagery are now presented.
 ### Initial Help
 
 Given that you have created an `analyse_polygons.json` configuration file, you can now launch the coverage tool:
+
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/generate_coverage.py -h
+# Bash
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/generate_coverage.py -h
 usage: generate_coverage.py [-h] [-ts TILE_SIZE] [-tqdm USE_TQDM]
                             [-ca {thumbnail,coverage,flights}]
                             [-rf ROOT_FOLDER]
@@ -52,7 +54,7 @@ optional arguments:
   -rf ROOT_FOLDER, --root-folder ROOT_FOLDER
                         Root folder where aerial photography is stored
                         
-Green_Spaces$
+green-spaces$
 ```
 
 <a id="example"> </a>
@@ -60,9 +62,11 @@ Green_Spaces$
 ### Example Usage
 
 To generate a single image from all imagery present in a dataset, use:
+
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/generate_coverage.py -ts 8 -tqdm true -ca thumbnail -rf thumbnails "50cm CIR aerial"
+# Bash
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/generate_coverage.py -ts 8 -tqdm true -ca thumbnail -rf thumbnails "50cm CIR aerial"
 Summary data shape: 10,400 x 5,600 pixels
 
 100km tiles:   0%|                                                                              | 0/55 [00:00<?, ?it/s]

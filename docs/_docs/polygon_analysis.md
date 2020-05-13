@@ -48,10 +48,11 @@ The polygon analysis tool is now described in the following sections, starting w
 
 ### Initial Help
 
-A set of polygons supplied in GeoJSON format can be analysed with `green_spaces\analyse_polygons.py`; to reveal the available command line options enter:
+A set of polygons supplied in GeoJSON format can be analysed with `green-spaces/analyse_polygons.py`; to reveal the available command line options enter:
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/analyse_polygons.py -h
+# Bash
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/analyse_polygons.py -h
 usage: analyse_polygons.py [-h] [-o OUTPUT_FOLDER] [-pc PRIMARY_CACHE_SIZE]
                            [-esc] [-v] [-fng FIRST_N_GARDENS]
                            [-rng RANDOM_N_GARDENS] [-opv]
@@ -110,7 +111,7 @@ optional arguments:
                         '1' produces unscaled images, '2' produces 1:2
                         downsampled images, '4' produces 1:4 downsampled
                         images
-Green_Spaces$ 
+green-spaces$ 
 ```
 
 <a id="example"> </a>
@@ -120,12 +121,14 @@ Green_Spaces$
 To analyse foliage using the green leaf index, you can enter:
 
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf -wl "25cm RGB aerial" data\example_gardens.geojson
+# Bash
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf -wl "25cm RGB aerial" data\example_gardens.geojson
 Using TensorFlow backend.
 Sorting features: 100%|#######################################################| 928/928 [00:00<00:00, 1107.38feature/s]
 Analysing features (0 cached, 16 missed; hit rate 0.0%):   2%|3                  | 15/928 [00:09<10:39,  1.43feature/s]
 ```
+
 This requests 4Gb of memory to be allocated for image caching, selects `greenleaf` as the index to process, and `25cm RGB aerial` as the imagery source. The GeoJSON to analyse is located at `data\example_gardens.geojson`. 
 
 The polygons are projected into the selected image dataset (in this case: `25cm RGB aerial`), the polygons are sorted spatially to improve caching, and then the polygons are analysed in turn.
@@ -134,10 +137,11 @@ Note that image tiles are slow to load as they are pulled from a potentially slo
 
 Once the GeoJSON is processed, the output will look like:
 ```bash
+# Bash
 Analysing features (992 cached, 6 missed; hit rate 99.4%): 100%|################| 928/928 [01:02<00:00, 14.75feature/s]
 Number of map tile requests: 998
 Number of map tile cache hits vs misses: 992 vs 6
-Green_Spaces$
+green-spaces$
 ```
 
 This reveals how effective the cache was - in this example, 992 polygons generated 998 image tile requests (as some polygons will straddle the boundary between tiles and hence need more than one tile), but of these requests 992 were served from cache with only 6 requests actually pulling data from storage.
@@ -160,8 +164,9 @@ Additionally, metrics are correct for OSGB36 tiles (such as surface area), howev
 
 Note that multiple indices can be processed at once, to make maximum use of the imagery whilst it is in memory; simply supply a series of index names after the index option, so to process green leaf and visual atmospheric resistence index, enter:
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf vari -wl "25cm RGB aerial" data\example_gardens.geojson
+# Bash
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf vari -wl "25cm RGB aerial" data\example_gardens.geojson
 Using TensorFlow backend.
 Sorting features: 100%|#######################################################| 928/928 [00:00<00:00, 1339.10feature/s]
 Analysing features (992 cached, 6 missed; hit rate 99.4%): 100%|################| 928/928 [00:51<00:00, 17.94feature/s]

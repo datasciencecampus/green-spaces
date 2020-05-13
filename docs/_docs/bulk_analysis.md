@@ -4,15 +4,15 @@ docid: "bulk-analysis"
 title: "Bulk Analysis"
 permalink: /docs/bulk_analysis.html
 subsections:
-  - title: Simple Work Distribution
+  - title: Simple work distribution
     id: simple-work-dist
-  - title: Split Large GeoJSON
+  - title: Split large GeoJSON files
     id: split-large-geojson
-  - title: Bulk Analysis of GEOJSON
+  - title: Bulk analysis of GeoJSON files
     id: bulk-analysis        
-  - title: Recombining Results
+  - title: Recombining results
     id: recombining
-  - title: Sift Incomplete Results
+  - title: Sift incomplete results
     id: sift-incomplete
 ---
 
@@ -29,11 +29,11 @@ Given that a large number of polygons may need to be processed, we provide tools
 
 If a GeoJSON is large (e.g. more than 100,000 polygons) it may be beneficial to split the file to enable distributed analysis. To split such a file, enter:
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python scripts/split_geojson.py -fpf 10000 your_polygons.geojson
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python scripts/split_geojson.py -fpf 10000 your_polygons.geojson
 Extracting features into sets of 1000: 100%|██████████████████████████████| 10000/10000 [00:04<00:00, 2430.21feature/s]
 
-Green_Spaces$
+green-spaces$
 ```
 
 This will generate _N_ files (depending on how many sets of 1,000 polygons are required to store your original dataset). The new files will be created in the same folder as the source file, with the suffix `XofY`, so if 12 files were needed with the above example, the new files will be named `your_polygons_1of12.geojson`, `your_polygons_2of12.geojson`, etc.
@@ -57,8 +57,8 @@ To perform bulk analysis, the following folders are required:
 To run a bulk analysis using the `analyse_polygons.py` utility, instead use:
 
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python scripts/bulk_analyse.py -if inpile_folder -of outpile_folder -rf results_folder -pf processing_folder -pcs 4G -i greenleaf -wl "25cm RGB aerial" 
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python scripts/bulk_analyse.py -if inpile_folder -of outpile_folder -rf results_folder -pf processing_folder -pcs 4G -i greenleaf -wl "25cm RGB aerial" 
 ```
 
 This will look in the specified inpile folder (`inpile_folder` in example) for any unprocessed GeoJSON. If none are present, it will terminate as all work is complete. Otherwise, it will attempt to move a GeoJSON into the processing folder (named `processing_folder` in the example), into a folder named after the current machine and its process ID. As part of the POSIX standard, such an operation is atomic and hence only one machine can succeed (if two machines attempt to move the same file, one will fail and retry a different GeoJSON). The dataset and cache parameters are given to `analyse_polygons.py` along with the GeoJSON filename, with output directed to the results folder.
@@ -70,8 +70,8 @@ This will look in the specified inpile folder (`inpile_folder` in example) for a
 Once all GeoJSON are processed, the results need to be recombined so the end user can continue as if a single GeoJSON was processed (rather than being concerned with potentially 100's of partial files). To recombine the outputs from the bulk analysis, enter:
 
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python scripts/bulk_recombine.py -rf results_folder -of combined_results_folder -i greenleaf -wl "25cm RGB aerial" 
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python scripts/bulk_recombine.py -rf results_folder -of combined_results_folder -i greenleaf -wl "25cm RGB aerial" 
 ```
 
 This searches for results in the `results_folder`, which are from the specified index and data source. The combined results are written to the output folder (specified as `combined_results_folder` in the example).
@@ -85,6 +85,6 @@ The end results will be the same three files as if the original GeoJSON was anal
 One problem of naively distributing the analyses amongst independent machines, is the potential for machines to fail. In which case, GeoJSON files may be moved to the output folder without producing corresponding results files. This utility detects such GeoJSON files, indicating they haven't been processed, and moves the files back to the inpile folder. To run the utility, enter:
 
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python scripts/bulk_sift_incomplete.py -if inpile_folder -of outpile_folder -rf results_folder
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python scripts/bulk_sift_incomplete.py -if inpile_folder -of outpile_folder -rf results_folder
 ```

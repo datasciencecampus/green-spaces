@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.com/datasciencecampus/Green_Spaces.svg?branch=develop)](https://travis-ci.com/datasciencecampus/Green_Spaces)
-[![codecov](https://codecov.io/gh/datasciencecampus/Green_Spaces/branch/develop/graph/badge.svg)](https://codecov.io/gh/datasciencecampus/Green_Spaces)
+[![Build Status](https://travis-ci.com/datasciencecampus/green-spaces.svg?branch=develop)](https://travis-ci.com/datasciencecampus/green-spaces)
+[![codecov](https://codecov.io/gh/datasciencecampus/green-spaces/branch/develop/graph/badge.svg)](https://codecov.io/gh/datasciencecampus/green-spaces)
 # Green Spaces
 
 The Green Spaces project is a tool that can render GeoJSON polygons over aerial imagery and analyse pixels contained within the polygons.
@@ -21,7 +21,7 @@ The tool has been developed to work on both Windows and MacOS. To install:
    
    **_Note_**: If Python 2 is the default Python version, but if you have installed Python 3.6, your path may be setup to use `python3` instead of `python`.
    
-2. To install the packages and dependencies for the tool, from the root directory (Green_Spaces) run:
+2. To install the packages and dependencies for the tool, from the root directory (green-spaces) run:
    ``` 
    pip install -e .
    ```
@@ -54,16 +54,16 @@ Web mercator imagery is stored in a user-defined hierarchy; the example is in th
  
 The data sources are intentionally independent of the vegetation indices. Additionally, the same data reader can be used with different physical datasets. For example, 25 cm OSGB data can be read using the same reader as 12.5 cm OSGB data, with a minor configuration change needed specifying the location of data and number of pixels per image. As the data readers are python classes with the same methods, the code that uses a reader does not need to know if it is consuming OSGB data or Web Mercator, it simply uses the returned results which are in a common form and hence source agnostic.
 
-The vegetation indices are defined in the JSON file to enable the end user to add new metrics and change their thresholds without altering Python source code. Metrics may be from a different codebase entirely rather than restricted to be part of the project source code. Vegetation indices and image loaders are defined in terms of class name and created using Python’s importlib functionality to create class instances directly from names stored as text strings at run time (note that all indices supplied are defined in `green_spaces\vegetation_analysis.py`).
+The vegetation indices are defined in the JSON file to enable the end user to add new metrics and change their thresholds without altering Python source code. Metrics may be from a different codebase entirely rather than restricted to be part of the project source code. Vegetation indices and image loaders are defined in terms of class name and created using Python’s importlib functionality to create class instances directly from names stored as text strings at run time (note that all indices supplied are defined in `green_spaces/vegetation_analysis.py`).
 
 ## Polygon Analysis
 The polygon analysis tool is now described in the following sections.
 
 ### Initial Help
-A set of polygons supplied in GeoJSON format can be analysed with `green_spaces\analyse_polygons.py`; to reveal the available command line options enter:
+A set of polygons supplied in GeoJSON format can be analysed with `green_spaces/analyse_polygons.py`; to reveal the available command line options enter:
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/analyse_polygons.py -h
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/analyse_polygons.py -h
 usage: analyse_polygons.py [-h] [-o OUTPUT_FOLDER] [-pc PRIMARY_CACHE_SIZE]
                            [-esc] [-v] [-fng FIRST_N_GARDENS]
                            [-rng RANDOM_N_GARDENS] [-opv]
@@ -122,15 +122,15 @@ optional arguments:
                         '1' produces unscaled images, '2' produces 1:2
                         downsampled images, '4' produces 1:4 downsampled
                         images
-Green_Spaces$ 
+green-spaces$
 ```
 
 ### Example Usage
 To analyse foliage using the green leaf index, you can enter:
 
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf -wl "25cm RGB aerial" data\example_gardens.geojson
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf -wl "25cm RGB aerial" data\example_gardens.geojson
 Using TensorFlow backend.
 Sorting features: 100%|#######################################################| 928/928 [00:00<00:00, 1107.38feature/s]
 Analysing features (0 cached, 16 missed; hit rate 0.0%):   2%|3                  | 15/928 [00:09<10:39,  1.43feature/s]
@@ -146,7 +146,7 @@ Once the GeoJSON is processed, the output will look like:
 Analysing features (992 cached, 6 missed; hit rate 99.4%): 100%|################| 928/928 [01:02<00:00, 14.75feature/s]
 Number of map tile requests: 998
 Number of map tile cache hits vs misses: 992 vs 6
-Green_Spaces$
+green-spaces$
 ```
 
 This reveals how effective the cache was - in this example, 992 polygons generated 998 image tile requests (as some polygons will straddle the boundary between tiles and hence need more than one tile), but of these requests 992 were served from cache with only 6 requests actually pulling data from storage.
@@ -167,8 +167,8 @@ Additionally, metrics are correct for OSGB36 tiles (such as surface area), howev
 
 Note that multiple indices can be processed at once, to make maximum use of the imagery whilst it is in memory; simply supply a series of index names after the index option, so to process green leaf and visual atmospheric resistence index, enter:
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf vari -wl "25cm RGB aerial" data\example_gardens.geojson
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/analyse_polygons.py -pc 4G -i greenleaf vari -wl "25cm RGB aerial" data\example_gardens.geojson
 Using TensorFlow backend.
 Sorting features: 100%|#######################################################| 928/928 [00:00<00:00, 1339.10feature/s]
 Analysing features (992 cached, 6 missed; hit rate 99.4%): 100%|################| 928/928 [00:51<00:00, 17.94feature/s]
@@ -195,8 +195,8 @@ Tools for generating summary images from OSGB36 tiled imagery are now presented.
 
 Given that you have created an `analyse_polygons.json` configuration file, you can now launch the coverage tool:
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/generate_coverage.py -h
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/generate_coverage.py -h
 usage: generate_coverage.py [-h] [-ts TILE_SIZE] [-tqdm USE_TQDM]
                             [-ca {thumbnail,coverage,flights}]
                             [-rf ROOT_FOLDER]
@@ -220,15 +220,15 @@ optional arguments:
   -rf ROOT_FOLDER, --root-folder ROOT_FOLDER
                         Root folder where aerial photography is stored
                         
-Green_Spaces$
+green-spaces$
 ```
 
 ### Example Usage
 
 To generate a single image from all imagery present in a dataset, use:
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python green_spaces/generate_coverage.py -ts 8 -tqdm true -ca thumbnail -rf thumbnails "50cm CIR aerial"
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python green_spaces/generate_coverage.py -ts 8 -tqdm true -ca thumbnail -rf thumbnails "50cm CIR aerial"
 Summary data shape: 10,400 x 5,600 pixels
 
 100km tiles:   0%|                                                                              | 0/55 [00:00<?, ?it/s]
@@ -256,11 +256,11 @@ Given that a large number of polygons may need to be processed, we provide tools
 ### Split Large GeoJSON
 If a GeoJSON is large (e.g. more than 100,000 polygons) it may be beneficial to split the file to enable distributed analysis. To split such a file, enter:
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python scripts/split_geojson.py -fpf 10000 your_polygons.geojson
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python scripts/split_geojson.py -fpf 10000 your_polygons.geojson
 Extracting features into sets of 1000: 100%|██████████████████████████████| 10000/10000 [00:04<00:00, 2430.21feature/s]
 
-Green_Spaces$
+green-spaces$
 ```
 
 This will generate _N_ files (depending on how many sets of 1,000 polygons are required to store your original dataset). The new files will be created in the same folder as the source file, with the suffix `XofY`, so if 12 files were needed with the above example, the new files will be named `your_polygons_1of12.geojson`, `your_polygons_2of12.geojson`, etc.
@@ -282,8 +282,8 @@ To perform bulk analysis, the following folders are required:
 To run a bulk analysis using the `analyse_polgons.py` utility, instead use:
 
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python scripts/bulk_analyse.py -if inpile_folder -of outpile_folder -rf results_folder -pf processing_folder -pcs 4G -i greenleaf -wl "25cm RGB aerial" 
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python scripts/bulk_analyse.py -if inpile_folder -of outpile_folder -rf results_folder -pf processing_folder -pcs 4G -i greenleaf -wl "25cm RGB aerial" 
 ```
 
 This will look in the specified inpile folder (`inpile_folder` in example) for any unprocessed GeoJSON. If none are present, it will terminate as all work is complete. Otherwise, it will attempt to move a GeoJSON into the processing folder (named `processing_folder` in the example), into a folder named after the current machine and its process ID. As part of the POSIX standard, such an operation is atomic and hence only one machine can succeed (if two machines attempt to move the same file, one will fail and retry a different GeoJSON). The dataset and cache parameters are given to `analyse_polygons.py` along with the GeoJSON filename, with output directed to the results folder.
@@ -293,8 +293,8 @@ This will look in the specified inpile folder (`inpile_folder` in example) for a
 Once all GeoJSON are processed, the results need to be recombined so the end user can continue as if a single GeoJSON was processed (rather than being concerned with potentially 100's of partial files). To recombine the outputs from the bulk analysis, enter:
 
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python scripts/bulk_recombine.py -rf results_folder -of combined_results_folder -i greenleaf -wl "25cm RGB aerial" 
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python scripts/bulk_recombine.py -rf results_folder -of combined_results_folder -i greenleaf -wl "25cm RGB aerial" 
 ```
 
 This searches for results in the `results_folder`, which are from the specified index and data source. The combined results are written to the output folder (specified as `combined_results_folder` in the example).
@@ -305,6 +305,6 @@ The end results will be the same three files as if the original GeoJSON was anal
 One problem of naively distributing the analyses amongst independent machinesm, is the potential for machines to fail. In which case, GeoJSON files may be moved to the output folder without producing corresponding results files. This utility detects such GeoJSON files, indicating they haven't been processed, and moves the files back to the inpile folder. To run the utility, enter:
 
 ```bash
-Green_Spaces$ export PYTHONPATH=.
-Green_Spaces$ python scripts/bulk_sift_incomplete.py -if inpile_folder -of outpile_folder -rf results_folder
+green-spaces$ export PYTHONPATH=.
+green-spaces$ python scripts/bulk_sift_incomplete.py -if inpile_folder -of outpile_folder -rf results_folder
 ```
