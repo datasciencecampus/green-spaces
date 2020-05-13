@@ -3,7 +3,7 @@ permalink: /blog/:year/:month/:day/:title.html
 title: green-spaces
 tagline: Calculating the green space in gardens
 description: >
-  The Green Spaces project is a tool that can render GeoJSON polygons over aerial imagery and analyse pixels contained within the polygons
+  The Green Spaces project comprises a python tool that can render GeoJSON polygons over aerial imagery and analyse pixels contained within the polygons
 logo: /static/logo.svg
 
 # baseurl determines the subpath of your site. For example if you're using an
