@@ -1,0 +1,12 @@
+- title: Determine the vegetation coverage.
+  text: |
+        green-spaces can be used to determine the vegetation coverage of areas using aerial imagery.
+  align: left
+
+- title: Select your own vegetation indice.
+  text: |
+        Select from naive, greenleaf, hsv, ndvi, vndvi, vari, lab or a neural network.
+
+- title: Subset your images using polygons.
+  text: |
+        This allows the user to focus on certain parts of the aerial imagery, such as gardens.
