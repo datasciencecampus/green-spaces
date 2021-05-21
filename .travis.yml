@@ -16,6 +16,7 @@ install:
   - pip install -e .
 
 script:
+  - env
   # for codecov support
   - pip install pytest pytest-cov
   # to report installed packages
